@@ -323,13 +323,17 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
         {step === 4 && (
           <div className="space-y-3">
-            <label className="flex items-center gap-2">
+            <div className="rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
+              {t('sighting.bodySymptom.help')}
+            </div>
+            <label className="flex items-start gap-2 rounded border border-gray-200 p-3 cursor-pointer hover:bg-gray-50">
               <input
                 type="checkbox"
                 checked={data.hasSymptoms}
                 onChange={e => update({ hasSymptoms: e.target.checked, bodySymptoms: e.target.checked ? [{ type: '', timing: 'during' }] : [] })}
+                className="mt-1"
               />
-              {t('sighting.bodySymptom.label')}
+              <span>{t('sighting.bodySymptom.label')}</span>
             </label>
             {data.hasSymptoms && data.bodySymptoms.map((sym, idx) => (
               <div key={idx} className="ps-6 space-y-2 border-s-2 border-gray-200 py-2">
@@ -344,6 +348,9 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
                   }}
                   className="w-full rounded border border-gray-300 px-3 py-2"
                 />
+                <label className="block text-xs font-medium text-gray-600">
+                  {t('sighting.bodySymptom.timingLabel')}
+                </label>
                 <select
                   value={sym.timing}
                   onChange={e => {
