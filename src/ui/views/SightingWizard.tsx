@@ -27,7 +27,7 @@ import type {
 import type { HebrewDate, Onah } from '../../calendar/hebrewDate';
 import { formatSightingDate } from '../../calendar/gregorianBridge';
 import { determineOnah, parseClockTime, formatLocalTime, halachicToday } from '../../calendar/zmanim';
-import { addHebrewDays } from '../../calendar/hebrewDate';
+import { addHebrewDays, hebrewDaysBetween, isBefore } from '../../calendar/hebrewDate';
 
 interface Props {
   onComplete: () => void;
@@ -100,6 +100,17 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
   const totalSteps = 8;
   const update = (patch: Partial<WizardData>) => setData(d => ({ ...d, ...patch }));
 
+  // Candidate previous sightings for "continued sighting" (section 112).
+  const continuationCandidates = sightings
+    .filter(s => {
+      if (data.type !== 'regular') return false;
+      if (s.type !== 'regular') return false;
+      if (isBefore(data.hebrewDate, s.hebrewDate)) return false;
+      const daysBetween = hebrewDaysBetween(s.hebrewDate, data.hebrewDate);
+      return daysBetween >= 1 && daysBetween <= 7;
+    })
+    .sort((a, b) => (isBefore(a.hebrewDate, b.hebrewDate) ? 1 : -1));
+
   const handleSave = async () => {
     const sighting: Omit<Sighting, 'id' | 'createdAt'> = {
       hebrewDate: data.hebrewDate,
@@ -111,18 +122,14 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
     if (data.hasExertion && data.exertion) sighting.exertion = data.exertion;
     if (data.hasSymptoms && data.bodySymptoms.length > 0) sighting.bodySymptoms = data.bodySymptoms;
-    if (data.continuedFromId) sighting.continuedFromId = data.continuedFromId;
+    if (data.continuedFromId && continuationCandidates.some(s => s.id === data.continuedFromId)) {
+      sighting.continuedFromId = data.continuedFromId;
+    }
     if (data.notes.trim()) sighting.notes = data.notes.trim();
 
     await addSighting(sighting);
     onComplete();
   };
-
-  // Recent sightings for continuation (last 14 days)
-  const recentSightings = sightings
-    .slice()
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, 10);
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 max-w-2xl mx-auto">
@@ -408,19 +415,30 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
         {step === 6 && (
           <div className="space-y-3">
-            <p className="text-sm">{t('wizard.continuedFrom')}</p>
-            <select
-              value={data.continuedFromId ?? ''}
-              onChange={e => update({ continuedFromId: e.target.value || undefined })}
-              className="w-full rounded border border-gray-300 px-3 py-2"
-            >
-              <option value="">—</option>
-              {recentSightings.map(s => (
-                <option key={s.id} value={s.id}>
-                  {formatSightingDate(s.hebrewDate, s.onah, lang)}
-                </option>
-              ))}
-            </select>
+            <div className="rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
+              {t('wizard.continuedHelp')}
+            </div>
+            {continuationCandidates.length === 0 ? (
+              <div className="rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                {t('wizard.continuedNone')}
+              </div>
+            ) : (
+              <label className="block">
+                <span className="block text-sm font-medium mb-1">{t('wizard.continuedFrom')}</span>
+                <select
+                  value={data.continuedFromId ?? ''}
+                  onChange={e => update({ continuedFromId: e.target.value || undefined })}
+                  className="w-full rounded border border-gray-300 px-3 py-2"
+                >
+                  <option value="">{t('wizard.continuedPlaceholder')}</option>
+                  {continuationCandidates.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {formatSightingDate(s.hebrewDate, s.onah, lang)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
         )}
 

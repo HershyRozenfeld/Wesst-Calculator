@@ -93,7 +93,10 @@ export const en = {
     step6: 'Continued Sighting',
     step7: 'Notes',
     step8: 'Summary',
-    continuedFrom: 'Is this a continuation of a previous sighting?',
+    continuedFrom: 'Select the original sighting',
+    continuedHelp: 'Use this only when bleeding stopped and returned within 7 days, and this is really a continuation of the same period that was already entered. In a normal case, leave this unselected.',
+    continuedNone: 'No previous sighting was found within 7 days. You can continue to the next step.',
+    continuedPlaceholder: 'No, this is a new sighting',
     continuedSelect: 'Select previous sighting',
   },
   calendar: {
