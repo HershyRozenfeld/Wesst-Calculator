@@ -30,7 +30,19 @@ import type {
 import { getEffectiveSightings, getRegularSightings } from './sightingClassifier';
 import { checkChodeshKavua } from './vesetChodesh';
 import { checkHaflagaKavua } from './vesetHaflaga';
+import { checkShavuaKavua } from './vesetShavua';
+import { checkSirugKavua } from './vesetSirug';
+import { checkDilugChodesh, checkDilugHaflaga } from './vesetDilug';
+import { checkGufPattern } from './vesetGuf';
+import { checkKfitzotKavua } from './vesetKfitzot';
+import { checkYamimNevukhimChodesh } from './yamimNevukhim';
 import { checkDormantRevival } from './uprootingRules';
+
+export interface NewKavuaDetection {
+  type: VesetType;
+  details: VesetRecord['details'];
+  establishedBy: string[];
+}
 
 /**
  * The complete halachic state of a woman at a given point in time.
@@ -110,8 +122,8 @@ export function buildHalachicState(
  */
 export function checkForNewKavua(
   state: HalachicState,
-): Array<{ type: VesetType; details: VesetRecord['details'] }> {
-  const newKavuot: Array<{ type: VesetType; details: VesetRecord['details'] }> = [];
+): NewKavuaDetection[] {
+  const newKavuot: NewKavuaDetection[] = [];
 
   // Skip if already has a fixed veset — section 9 implies one active fixed at a time
   // (though technically multiple can exist, the primary one governs)
@@ -130,6 +142,7 @@ export function checkForNewKavua(
         onah: chodeshKavua.onah,
         isRoshChodesh: chodeshKavua.isRoshChodesh,
       },
+      establishedBy: chodeshKavua.establishedBy,
     });
   }
 
@@ -143,6 +156,105 @@ export function checkForNewKavua(
         interval: haflagaKavua.interval,
         onah: haflagaKavua.onah,
       },
+      establishedBy: haflagaKavua.establishedBy,
+    });
+  }
+
+  const shavuaKavua = checkShavuaKavua(sightings);
+  if (shavuaKavua) {
+    newKavuot.push({
+      type: 'shavua',
+      details: {
+        kind: 'shavua',
+        dayOfWeek: shavuaKavua.dayOfWeek,
+        weekInterval: shavuaKavua.weekInterval,
+        onah: shavuaKavua.onah,
+      },
+      establishedBy: shavuaKavua.establishedBy,
+    });
+  }
+
+  const dilugChodesh = checkDilugChodesh(sightings);
+  if (dilugChodesh) {
+    newKavuot.push({
+      type: 'dilug',
+      details: {
+        kind: 'dilug',
+        direction: dilugChodesh.direction,
+        step: dilugChodesh.step,
+        lastDay: dilugChodesh.lastDay,
+        scope: dilugChodesh.scope,
+        onah: dilugChodesh.onah,
+      },
+      establishedBy: dilugChodesh.establishedBy,
+    });
+  }
+
+  const dilugHaflaga = checkDilugHaflaga(sightings);
+  if (dilugHaflaga) {
+    newKavuot.push({
+      type: 'dilug',
+      details: {
+        kind: 'dilug',
+        direction: dilugHaflaga.direction,
+        step: dilugHaflaga.step,
+        lastDay: dilugHaflaga.lastDay,
+        scope: dilugHaflaga.scope,
+        onah: dilugHaflaga.onah,
+      },
+      establishedBy: dilugHaflaga.establishedBy,
+    });
+  }
+
+  const sirugKavua = checkSirugKavua(sightings);
+  if (sirugKavua) {
+    newKavuot.push({
+      type: 'sirug',
+      details: {
+        kind: 'sirug',
+        dayOfMonth: sirugKavua.dayOfMonth,
+        monthInterval: sirugKavua.monthInterval,
+        onah: sirugKavua.onah,
+      },
+      establishedBy: sirugKavua.establishedBy,
+    });
+  }
+
+  const gufPattern = checkGufPattern(sightings);
+  if (gufPattern?.isFixed) {
+    newKavuot.push({
+      type: 'guf',
+      details: {
+        kind: 'guf',
+        symptomType: gufPattern.symptomType,
+        timing: gufPattern.timing,
+      },
+      establishedBy: gufPattern.establishedBy,
+    });
+  }
+
+  const kfitzotKavua = checkKfitzotKavua(sightings);
+  if (kfitzotKavua) {
+    newKavuot.push({
+      type: 'kfitzot',
+      details: {
+        kind: 'kfitzot',
+        exertionType: kfitzotKavua.exertionType,
+      },
+      establishedBy: kfitzotKavua.establishedBy,
+    });
+  }
+
+  const yamimNevukhim = checkYamimNevukhimChodesh(sightings);
+  if (yamimNevukhim) {
+    newKavuot.push({
+      type: 'yamim_nevukhim',
+      details: {
+        kind: 'yamim_nevukhim',
+        days: yamimNevukhim.days,
+        scope: yamimNevukhim.scope,
+      },
+      establishedBy: yamimNevukhim.establishedBy,
     });
   }
 
@@ -225,6 +337,11 @@ export function getApplicableWorryTypes(state: HalachicState): VesetType[] {
   if (state.activeFixedVeset) {
     // Section 9: Only worry about the fixed veset type
     const types: VesetType[] = [state.activeFixedVeset.type];
+
+    // Section 89: even a fixed kfitzot veset does not suppress Onah Beinonit.
+    if (state.activeFixedVeset.type === 'kfitzot') {
+      types.push('onah_beinonit');
+    }
 
     // Section 13: If she changed once (saw on a different day), also worry about
     // that day's chodesh. This is tracked by a non-fixed chodesh worry existing

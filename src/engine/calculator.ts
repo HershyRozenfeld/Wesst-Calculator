@@ -24,6 +24,10 @@ import type {
 import { calculateOnahBeinonit } from './onahBeinonit';
 import { calculateChodeshWorries } from './vesetChodesh';
 import { calculateHaflagaWorries, getActiveHaflagot } from './vesetHaflaga';
+import { calculateShavuaWorry } from './vesetShavua';
+import { calculateSirugWorry } from './vesetSirug';
+import { calculateDilugWorry } from './vesetDilug';
+import { calculateYamimNevukhimWorries } from './yamimNevukhim';
 import {
   buildHalachicState,
   getApplicableWorryTypes,
@@ -247,6 +251,45 @@ function calculateFixedVesetWorry(
         }],
       }];
     }
+
+    case 'shavua':
+      return [calculateShavuaWorry(
+        { ...details, establishedBy: fixedVeset.establishedBy },
+        lastSighting,
+      )];
+
+    case 'sirug':
+      return [calculateSirugWorry(
+        { ...details, establishedBy: fixedVeset.establishedBy },
+        lastSighting,
+      )];
+
+    case 'dilug': {
+      const day = calculateDilugWorry(
+        { ...details, establishedBy: fixedVeset.establishedBy },
+        lastSighting,
+        targetYear,
+        targetMonth,
+      );
+      return day ? [day] : [];
+    }
+
+    case 'yamim_nevukhim':
+      return calculateYamimNevukhimWorries(
+        {
+          ...details,
+          onah: lastSighting.onah,
+          establishedBy: fixedVeset.establishedBy,
+        },
+        targetYear,
+        targetMonth,
+      );
+
+    case 'guf':
+    case 'kfitzot':
+      // These are trigger-based vesets. They do not produce a monthly calendar
+      // date unless the matching symptom/exertion is currently reported.
+      return [];
 
     default:
       return [];

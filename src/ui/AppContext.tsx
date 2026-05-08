@@ -15,9 +15,11 @@ import {
   getSettings,
   saveSighting,
   deleteSighting as deleteSightingDB,
+  saveVesetRecord,
   saveSettings as saveSettingsDB,
 } from '../data/storage';
 import { setLanguage } from '../i18n';
+import { buildHalachicState, checkForNewKavua, type NewKavuaDetection } from '../engine/stateManager';
 
 interface AppContextValue {
   sightings: Sighting[];
@@ -31,6 +33,14 @@ interface AppContextValue {
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
+
+function sameDetectedVeset(record: VesetRecord, detection: NewKavuaDetection): boolean {
+  return (
+    record.status === 'fixed' &&
+    record.type === detection.type &&
+    JSON.stringify(record.details) === JSON.stringify(detection.details)
+  );
+}
 
 export function useAppContext(): AppContextValue {
   const ctx = useContext(AppContext);
@@ -67,6 +77,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
     };
     await saveSighting(sighting);
+
+    const [latestSightings, latestRecords] = await Promise.all([
+      getAllSightings(),
+      getAllVesetRecords(),
+    ]);
+    const state = buildHalachicState(latestSightings, latestRecords);
+    const newKavuot = checkForNewKavua(state);
+
+    for (const detection of newKavuot) {
+      const alreadyStored = latestRecords.some(record => sameDetectedVeset(record, detection));
+      if (alreadyStored) continue;
+
+      const now = new Date().toISOString();
+      const record: VesetRecord = {
+        id: uuid(),
+        type: detection.type,
+        status: 'fixed',
+        details: detection.details,
+        establishedBy: detection.establishedBy,
+        uprootCount: 0,
+        isMaAyanPatuach: false,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await saveVesetRecord(record);
+      latestRecords.push(record);
+    }
+
     await refresh();
   }, [refresh]);
 

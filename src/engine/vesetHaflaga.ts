@@ -157,15 +157,17 @@ export function getActiveHaflagot(sightings: Sighting[]): ActiveHaflaga[] {
  */
 export function checkHaflagaKavua(
   sightings: Sighting[],
-): { interval: number; onah: Onah } | null {
+): { interval: number; onah: Onah; establishedBy: string[] } | null {
   if (sightings.length < 4) return null;
 
   // Calculate all intervals
-  const intervals: Array<{ interval: number; onah: Onah }> = [];
+  const intervals: Array<{ interval: number; onah: Onah; fromIndex: number; toIndex: number }> = [];
   for (let i = 1; i < sightings.length; i++) {
     intervals.push({
       interval: hebrewDaysBetween(sightings[i - 1]!.hebrewDate, sightings[i]!.hebrewDate),
       onah: sightings[i]!.onah,
+      fromIndex: i - 1,
+      toIndex: i,
     });
   }
 
@@ -180,7 +182,16 @@ export function checkHaflagaKavua(
       // Check that all 3 intervals' sightings have the same onah
       // (the sighting at the END of each interval)
       if (a.onah === b.onah && b.onah === c.onah) {
-        return { interval: a.interval, onah: a.onah };
+        return {
+          interval: a.interval,
+          onah: a.onah,
+          establishedBy: [
+            sightings[a.fromIndex]!.id,
+            sightings[a.toIndex]!.id,
+            sightings[b.toIndex]!.id,
+            sightings[c.toIndex]!.id,
+          ],
+        };
       }
     }
   }

@@ -7,6 +7,7 @@ import { describe, test, expect } from 'vitest';
 import { calculateSeparationDays, mergeSeparationDays } from '../../src/engine/calculator';
 import { sameDate, type HebrewDate } from '../../src/calendar/hebrewDate';
 import type { Sighting, VesetRecord, SeparationDay } from '../../src/data/types';
+import { buildHalachicState, checkForNewKavua } from '../../src/engine/stateManager';
 
 function hd(day: number, month: number, year: number = 5786): HebrewDate {
   return { year, month, day };
@@ -21,6 +22,20 @@ function makeSighting(day: number, month: number, onah: 'day' | 'night' = 'day',
     medicationStatus: 'none',
     pregnancyStatus: 'none',
     createdAt: '',
+  };
+}
+
+function fixedRecord(details: VesetRecord['details'], type: VesetRecord['type']): VesetRecord {
+  return {
+    id: `v-${type}`,
+    type,
+    status: 'fixed',
+    details,
+    establishedBy: [],
+    uprootCount: 0,
+    isMaAyanPatuach: false,
+    createdAt: '',
+    updatedAt: '',
   };
 }
 
@@ -203,5 +218,104 @@ describe('calculateSeparationDays — Medication suppression', () => {
     const result = calculateSeparationDays(sightings, [], { targetYear: 5786, targetMonth: 2 });
     // Should NOT be suppressed (medicationProven defaults to false)
     expect(result.separationDays.length).toBeGreaterThan(0);
+  });
+});
+
+describe('calculateSeparationDays — Advanced fixed vesets', () => {
+  test('fixed shavua veset produces the next weekly worry', () => {
+    const sightings = [makeSighting(1, 1)];
+    const veset = fixedRecord(
+      { kind: 'shavua', dayOfWeek: 3, weekInterval: 4, onah: 'day' },
+      'shavua',
+    );
+
+    const result = calculateSeparationDays(sightings, [veset], {
+      targetYear: 5786,
+      targetMonth: 1,
+    });
+
+    expect(result.separationDays.some(d => d.reasons.some(r => r.vesetType === 'shavua'))).toBe(true);
+    expect(result.summary.fixedVesetType).toBe('shavua');
+  });
+
+  test('fixed sirug veset produces the next alternating-month worry', () => {
+    const sightings = [makeSighting(1, 1)];
+    const veset = fixedRecord(
+      { kind: 'sirug', dayOfMonth: 1, monthInterval: 2, onah: 'day' },
+      'sirug',
+    );
+
+    const result = calculateSeparationDays(sightings, [veset], {
+      targetYear: 5786,
+      targetMonth: 3,
+    });
+
+    expect(result.separationDays.some(d => sameDate(d.hebrewDate, hd(1, 3)))).toBe(true);
+    expect(result.separationDays[0]?.reasons.some(r => r.vesetType === 'sirug')).toBe(true);
+  });
+
+  test('fixed chodesh dilug veset produces the target-month skipped day', () => {
+    const sightings = [makeSighting(18, 4)];
+    const veset = fixedRecord(
+      { kind: 'dilug', direction: 'ascending', step: 1, lastDay: 18, scope: 'chodesh', onah: 'day' },
+      'dilug',
+    );
+
+    const result = calculateSeparationDays(sightings, [veset], {
+      targetYear: 5786,
+      targetMonth: 5,
+    });
+
+    expect(result.separationDays.some(d => sameDate(d.hebrewDate, hd(19, 5)))).toBe(true);
+    expect(result.separationDays[0]?.reasons.some(r => r.vesetType === 'dilug')).toBe(true);
+  });
+
+  test('fixed yamim nevukhim veset produces each clustered day', () => {
+    const sightings = [makeSighting(10, 1)];
+    const veset = fixedRecord(
+      { kind: 'yamim_nevukhim', days: [26, 27], scope: 'chodesh' },
+      'yamim_nevukhim',
+    );
+
+    const result = calculateSeparationDays(sightings, [veset], {
+      targetYear: 5786,
+      targetMonth: 2,
+    });
+
+    expect(result.separationDays.map(d => d.hebrewDate.day)).toEqual([26, 27]);
+    expect(result.separationDays.every(d => d.reasons[0]?.vesetType === 'yamim_nevukhim')).toBe(true);
+  });
+
+  test('fixed kfitzot still keeps onah beinonit worries', () => {
+    const sightings = [makeSighting(5, 1)];
+    const veset = fixedRecord(
+      { kind: 'kfitzot', exertionType: 'lifting' },
+      'kfitzot',
+    );
+
+    const result = calculateSeparationDays(sightings, [veset], {
+      targetYear: 5786,
+      targetMonth: 2,
+    });
+
+    expect(result.summary.fixedVesetType).toBe('kfitzot');
+    expect(result.separationDays.some(d => d.reasons.some(r => r.vesetType === 'onah_beinonit'))).toBe(true);
+  });
+});
+
+describe('checkForNewKavua — advanced persistence detections', () => {
+  test('detects fixed kfitzot with establishment IDs for storage', () => {
+    const exertion = { description: 'lifting', intensity: 'significant' as const };
+    const sightings = [
+      { ...makeSighting(1, 1, 'day', 's1'), exertion },
+      { ...makeSighting(5, 2, 'day', 's2'), exertion },
+      { ...makeSighting(10, 3, 'day', 's3'), exertion },
+    ];
+    const state = buildHalachicState(sightings, []);
+    const detections = checkForNewKavua(state);
+
+    const kfitzot = detections.find(d => d.type === 'kfitzot');
+    expect(kfitzot?.details).toEqual({ kind: 'kfitzot', exertionType: 'lifting' });
+    expect(kfitzot?.establishedBy).toEqual(['s1', 's2', 's3']);
   });
 });

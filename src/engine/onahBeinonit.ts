@@ -34,40 +34,44 @@ export function calculateOnahBeinonit(
 ): SeparationDay[] {
   // אשה שיש לה ווסת קבוע אינה צריכה לחשוש לעונה בינונית — section 43
   if (fixedVeset && fixedVeset.status === 'fixed') {
-    // Exception: fixed haflaga < 30 that was missed — section 44
-    if (
-      fixedVesetMissed &&
-      fixedVeset.details.kind === 'haflaga' &&
-      fixedVeset.details.interval < 30
-    ) {
-      // חוששת רק ביום 30, באותה עונה — section 44 (main psak)
-      return [
-        {
-          hebrewDate: addHebrewDays(lastSightingDate, 29), // day 30 (inclusive)
-          onah: fixedVeset.details.onah,
-          reasons: [{
-            vesetType: 'onah_beinonit',
-            description_he: 'עונה בינונית — יום 30 (ווסת קבוע הפלגה קצרה שעבר)',
-            description_en: 'Onah Beinonit — Day 30 (fixed short haflaga missed)',
-            sectionRef: 44,
-          }],
-        },
-      ];
-    }
+    // Fixed kfitzot is an exception: she still worries about Onah Beinonit
+    // even though the exertion pattern is fixed — section 89.
+    if (fixedVeset.details.kind !== 'kfitzot') {
+      // Exception: fixed haflaga < 30 that was missed — section 44
+      if (
+        fixedVesetMissed &&
+        fixedVeset.details.kind === 'haflaga' &&
+        fixedVeset.details.interval < 30
+      ) {
+        // חוששת רק ביום 30, באותה עונה — section 44 (main psak)
+        return [
+          {
+            hebrewDate: addHebrewDays(lastSightingDate, 29), // day 30 (inclusive)
+            onah: fixedVeset.details.onah,
+            reasons: [{
+              vesetType: 'onah_beinonit',
+              description_he: 'עונה בינונית — יום 30 (ווסת קבוע הפלגה קצרה שעבר)',
+              description_en: 'Onah Beinonit — Day 30 (fixed short haflaga missed)',
+              sectionRef: 44,
+            }],
+          },
+        ];
+      }
 
-    // Exception: fixed chodesh that was missed — section 45
-    // לא חוששת כלל לעו"ב
-    if (fixedVesetMissed && fixedVeset.details.kind === 'chodesh') {
-      return [];
-    }
+      // Exception: fixed chodesh that was missed — section 45
+      // לא חוששת כלל לעו"ב
+      if (fixedVesetMissed && fixedVeset.details.kind === 'chodesh') {
+        return [];
+      }
 
-    // Normal case: has fixed veset, not missed — no OB worry
-    if (!fixedVesetMissed) {
-      return [];
+      // Normal case: has fixed veset, not missed — no OB worry
+      if (!fixedVesetMissed) {
+        return [];
+      }
     }
   }
 
-  // No fixed veset (or fixed veset was uprooted) — worry about day 30 AND 31
+  // No fixed veset, or fixed kfitzot — worry about day 30 AND 31
   // עונה בינונית ביום 30 ו-31, כל המעת לעת — sections 37-38, 41
   const day30 = addHebrewDays(lastSightingDate, 29); // day 30 inclusive
   const day31 = addHebrewDays(lastSightingDate, 30); // day 31 inclusive

@@ -136,19 +136,20 @@ export function getActiveChodeshWorries(sightings: Sighting[]): ChodeshWorry[] {
  */
 export function checkChodeshKavua(
   sightings: Sighting[],
-): { dayOfMonth: number; onah: Onah; isRoshChodesh: boolean } | null {
+): { dayOfMonth: number; onah: Onah; isRoshChodesh: boolean; establishedBy: string[] } | null {
   if (sightings.length < 3) return null;
 
   // Count sightings per (dayOfMonth, onah) combination
-  const counts = new Map<string, { count: number; dayOfMonth: number; onah: Onah }>();
+  const counts = new Map<string, { count: number; dayOfMonth: number; onah: Onah; ids: string[] }>();
 
   for (const s of sightings) {
     const key = `${s.hebrewDate.day}-${s.onah}`;
     const existing = counts.get(key);
     if (existing) {
       existing.count++;
+      existing.ids.push(s.id);
     } else {
-      counts.set(key, { count: 1, dayOfMonth: s.hebrewDate.day, onah: s.onah });
+      counts.set(key, { count: 1, dayOfMonth: s.hebrewDate.day, onah: s.onah, ids: [s.id] });
     }
   }
 
@@ -159,6 +160,7 @@ export function checkChodeshKavua(
         dayOfMonth: entry.dayOfMonth,
         onah: entry.onah,
         isRoshChodesh: entry.dayOfMonth === 1 || entry.dayOfMonth === 30,
+        establishedBy: entry.ids.slice(0, 3),
       };
     }
   }
@@ -173,6 +175,7 @@ export function checkChodeshKavua(
         dayOfMonth: 1, // Treat as RC
         onah: rcSightings[0]!.onah,
         isRoshChodesh: true,
+        establishedBy: rcSightings.slice(0, 3).map(s => s.id),
       };
     }
   }
