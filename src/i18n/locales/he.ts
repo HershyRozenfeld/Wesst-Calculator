@@ -48,9 +48,9 @@ export const he = {
   },
   sighting: {
     type: {
-      regular: 'ראיה רגילה',
-      ketem: 'כתם',
-      bedika: 'בדיקה',
+      regular: 'ראיה רגילה (תחילת מחזור רגיל)',
+      ketem: 'כתם (שלא התפתח למחזור)',
+      bedika: 'בדיקה שנמצאה עם דם',
     },
     medication: {
       none: 'ללא תרופות',

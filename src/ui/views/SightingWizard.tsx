@@ -430,7 +430,7 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
         {step === 8 && (
           <div className="space-y-2 text-sm">
             <div><strong>{lang === 'he' ? 'תאריך:' : 'Date:'}</strong> {formatSightingDate(data.hebrewDate, data.onah, lang)}</div>
-            <div><strong>{t('sighting.type.regular')}:</strong> {t(`sighting.type.${data.type}`)}</div>
+            <div><strong>{t('wizard.step2')}:</strong> {t(`sighting.type.${data.type}`)}</div>
             {data.hasExertion && data.exertion && (
               <div><strong>{t('sighting.exertion.label')}:</strong> {data.exertion.description} ({t(`sighting.exertion.${data.exertion.intensity}`)})</div>
             )}

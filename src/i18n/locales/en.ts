@@ -48,9 +48,9 @@ export const en = {
   },
   sighting: {
     type: {
-      regular: 'Regular sighting',
-      ketem: 'Stain (ketem)',
-      bedika: 'Check (bedika)',
+      regular: 'Regular sighting (start of a regular period)',
+      ketem: 'Stain (ketem; did not develop into a period)',
+      bedika: 'Check found with blood (bedika)',
     },
     medication: {
       none: 'No medication',
