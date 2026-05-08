@@ -441,6 +441,11 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
                 </select>
               </label>
             )}
+            {data.continuedFromId && (
+              <div className="rounded border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-900">
+                {t('wizard.continuedSelected')}
+              </div>
+            )}
           </div>
         )}
 
@@ -482,10 +487,10 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
         {step < totalSteps ? (
           <button
             type="button"
-            onClick={() => setStep(s => s + 1)}
+            onClick={step === 6 && data.continuedFromId ? onCancel : () => setStep(s => s + 1)}
             className="px-4 py-2 rounded bg-primary text-white hover:bg-primary-dark"
           >
-            {t('common.next')}
+            {step === 6 && data.continuedFromId ? t('common.finishWithoutSaving') : t('common.next')}
           </button>
         ) : (
           <button
