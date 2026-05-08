@@ -259,22 +259,28 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
         )}
 
         {step === 2 && (
-          <fieldset className="space-y-2">
-            {(['regular', 'ketem', 'bedika'] as SightingType[]).map(type => (
-              <label
-                key={type}
-                className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50"
-              >
-                <input
-                  type="radio"
-                  name="type"
-                  checked={data.type === type}
-                  onChange={() => update({ type })}
-                />
-                <span>{t(`sighting.type.${type}`)}</span>
-              </label>
-            ))}
-          </fieldset>
+          <div className="space-y-3">
+            <div className="rounded border border-blue-200 bg-blue-50 p-3 text-sm leading-6 text-blue-950">
+              <p>{t('sighting.typeHelp')}</p>
+              <p className="mt-1 text-xs text-blue-800">{t('sighting.typeSource')}</p>
+            </div>
+            <fieldset className="space-y-2">
+              {(['regular', 'ketem', 'bedika'] as SightingType[]).map(type => (
+                <label
+                  key={type}
+                  className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="type"
+                    checked={data.type === type}
+                    onChange={() => update({ type })}
+                  />
+                  <span>{t(`sighting.type.${type}`)}</span>
+                </label>
+              ))}
+            </fieldset>
+          </div>
         )}
 
         {step === 3 && (

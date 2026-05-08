@@ -114,6 +114,25 @@ describe('calculateSeparationDays — Section 8: three worries without fixed ves
       d => d.hebrewDate.day === 24 && d.reasons.some(r => r.vesetType === 'chodesh'),
     )).toBe(false);
   });
+
+  test('ketem before a regular period is ignored and the period date is counted', () => {
+    const sightings: Sighting[] = [
+      { ...makeSighting(20, 1, 'day', 'ketem-20'), type: 'ketem' },
+      makeSighting(24, 1, 'day', 'regular-24'),
+    ];
+
+    const result = calculateSeparationDays(sightings, [], {
+      targetYear: 5786,
+      targetMonth: 2,
+    });
+
+    expect(result.separationDays.some(
+      d => sameDate(d.hebrewDate, hd(20, 2)) && d.reasons.some(r => r.vesetType === 'chodesh'),
+    )).toBe(false);
+    expect(result.separationDays.some(
+      d => sameDate(d.hebrewDate, hd(24, 2)) && d.reasons.some(r => r.vesetType === 'chodesh'),
+    )).toBe(true);
+  });
 });
 
 describe('calculateSeparationDays — Section 9: fixed veset suppresses other worries', () => {

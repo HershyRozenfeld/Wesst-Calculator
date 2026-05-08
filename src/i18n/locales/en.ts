@@ -49,10 +49,12 @@ export const en = {
   },
   sighting: {
     type: {
-      regular: 'Regular sighting (start of a regular period)',
-      ketem: 'Stain (ketem; did not develop into a period)',
+      regular: 'Regular sighting (start/main part of a regular period)',
+      ketem: 'Stain only (not the start of a period)',
       bedika: 'Check found with blood (bedika)',
     },
+    typeHelp: 'A regular ketem is not counted for veset calculations. If a regular period began after a ketem, enter the start of the period as a regular sighting. If there was only a small amount of blood at first and the main period began later, that is not a regular ketem: enter the main period as a new sighting too, so that date is calculated.',
+    typeSource: 'Based on sections 106 and 112',
     medication: {
       none: 'No medication',
       taking: 'Taking contraceptive medication',
