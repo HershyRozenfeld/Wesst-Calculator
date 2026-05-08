@@ -16,6 +16,7 @@
 
 import type { Onah } from '../calendar/hebrewDate';
 import {
+  getNextMonth,
   hebrewMonthLength,
   isRoshChodesh,
   getRoshChodeshDays,
@@ -51,38 +52,45 @@ export function calculateChodeshWorries(
   if (sightings.length === 0) return [];
 
   const results: SeparationDay[] = [];
-  const targetMonthLen = hebrewMonthLength(targetYear, targetMonth);
+  const regularSightings = sightings.filter(s => s.type === 'regular');
+  for (const sighting of regularSightings) {
+    const nextMonth = getNextMonth(sighting.hebrewDate.year, sighting.hebrewDate.month);
+    const sourceDescription = `ראיה ביום ${sighting.hebrewDate.day}`;
 
-  // Collect all active day-of-month worries
-  const worries = getActiveChodeshWorries(sightings);
-
-  for (const worry of worries) {
-    if (worry.isRoshChodesh) {
-      // Rosh Chodesh: worry about both days (section 19)
-      const rcDays = getRoshChodeshDays(targetYear, targetMonth);
-      for (const rcDay of rcDays) {
+    if (isRoshChodesh(sighting.hebrewDate)) {
+      // Rosh Chodesh: the worry is on the next Rosh Chodesh only.
+      const rcDays = getRoshChodeshDays(nextMonth.year, nextMonth.month);
+      for (const rcDay of rcDays.filter(d => d.year === targetYear && d.month === targetMonth)) {
         results.push({
           hebrewDate: rcDay,
-          onah: worry.onah,
+          onah: sighting.onah,
           reasons: [{
             vesetType: 'chodesh',
-            description_he: `ווסת החודש — ראש חודש (${worry.sourceDescription})`,
-            description_en: `Veset HaChodesh — Rosh Chodesh (${worry.sourceDescription})`,
-            sectionRef: worry.sectionRef,
+            description_he: `ווסת החודש — ראש חודש (${sourceDescription})`,
+            description_en: `Veset HaChodesh — Rosh Chodesh (${sourceDescription})`,
+            sectionRef: 19,
           }],
         });
       }
     } else {
-      // Regular day of month
-      if (worry.dayOfMonth <= targetMonthLen) {
+      const targetMonthLen = hebrewMonthLength(nextMonth.year, nextMonth.month);
+      if (sighting.hebrewDate.day <= targetMonthLen) {
+        const worryDate = {
+          year: nextMonth.year,
+          month: nextMonth.month,
+          day: sighting.hebrewDate.day,
+        };
+        if (worryDate.year !== targetYear || worryDate.month !== targetMonth) {
+          continue;
+        }
         results.push({
-          hebrewDate: { year: targetYear, month: targetMonth, day: worry.dayOfMonth },
-          onah: worry.onah,
+          hebrewDate: worryDate,
+          onah: sighting.onah,
           reasons: [{
             vesetType: 'chodesh',
-            description_he: `ווסת החודש — יום ${worry.dayOfMonth} בחודש`,
-            description_en: `Veset HaChodesh — Day ${worry.dayOfMonth} of month`,
-            sectionRef: worry.sectionRef,
+            description_he: `ווסת החודש — יום ${sighting.hebrewDate.day} בחודש`,
+            description_en: `Veset HaChodesh — Day ${sighting.hebrewDate.day} of month`,
+            sectionRef: 12,
           }],
         });
       }

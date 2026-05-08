@@ -94,6 +94,26 @@ describe('calculateSeparationDays — Section 8: three worries without fixed ves
     );
     expect(chodeshDays.some(d => sameDate(d.hebrewDate, hd(25, 2)))).toBe(true);
   });
+
+  test('non-fixed chodesh worry applies only to the next Hebrew month', () => {
+    const sightings = [makeSighting(24, 2)];
+
+    const nextMonth = calculateSeparationDays(sightings, [], {
+      targetYear: 5786,
+      targetMonth: 3,
+    });
+    expect(nextMonth.separationDays.some(
+      d => sameDate(d.hebrewDate, hd(24, 3)) && d.reasons.some(r => r.vesetType === 'chodesh'),
+    )).toBe(true);
+
+    const laterMonth = calculateSeparationDays(sightings, [], {
+      targetYear: 5786,
+      targetMonth: 4,
+    });
+    expect(laterMonth.separationDays.some(
+      d => d.hebrewDate.day === 24 && d.reasons.some(r => r.vesetType === 'chodesh'),
+    )).toBe(false);
+  });
 });
 
 describe('calculateSeparationDays — Section 9: fixed veset suppresses other worries', () => {
