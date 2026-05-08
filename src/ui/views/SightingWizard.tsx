@@ -416,7 +416,9 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
         {step === 6 && (
           <div className="space-y-3">
             <div className="rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
-              {t('wizard.continuedHelp')}
+              <p>{t('wizard.continuedHelp')}</p>
+              <p className="mt-2 font-medium">{t('wizard.continuedException')}</p>
+              <p className="mt-2 text-xs text-blue-800">{t('wizard.continuedSource')}</p>
             </div>
             {continuationCandidates.length === 0 ? (
               <div className="rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
