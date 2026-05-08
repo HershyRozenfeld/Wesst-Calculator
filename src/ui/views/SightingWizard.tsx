@@ -285,13 +285,18 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
         {step === 3 && (
           <div className="space-y-3">
-            <label className="flex items-center gap-2">
+            <div className="rounded border border-blue-200 bg-blue-50 p-3 text-sm leading-6 text-blue-950">
+              <p>{t('sighting.exertion.help')}</p>
+              <p className="mt-1 text-xs text-blue-800">{t('sighting.exertion.source')}</p>
+            </div>
+            <label className="flex items-start gap-2 rounded border border-gray-200 p-3 cursor-pointer hover:bg-gray-50">
               <input
                 type="checkbox"
                 checked={data.hasExertion}
                 onChange={e => update({ hasExertion: e.target.checked })}
+                className="mt-1"
               />
-              {t('sighting.exertion.label')}
+              <span>{t('sighting.exertion.label')}</span>
             </label>
             {data.hasExertion && (
               <div className="space-y-2 ps-6">

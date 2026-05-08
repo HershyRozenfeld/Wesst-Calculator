@@ -66,8 +66,10 @@ export const en = {
       postpartum: 'Postpartum',
     },
     exertion: {
-      label: 'Significant physical exertion',
-      description: 'Exertion description',
+      label: 'Did the sighting happen after unusual physical exertion?',
+      help: 'Mark this only if there was clear unusual exertion close to the sighting, such as a hard jump, impact, heavy lifting, or unusual exercise. This is used to check Veset HaKfitzot: when the same significant exertion led to sightings multiple times. If the exertion was light or ordinary, leave this off and the sighting is calculated as a regular sighting.',
+      source: 'Based on sections 88-90',
+      description: 'What exertion? For example: heavy lifting',
       significant: 'Significant',
       mild: 'Mild',
     },
