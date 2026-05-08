@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#1e3a5f"/>
+
+  <!-- Calendar frame -->
+  <rect x="96" y="128" width="320" height="288" rx="24" fill="#f8fafc" stroke="#2d5a8e" stroke-width="8"/>
+
+  <!-- Calendar top bar -->
+  <rect x="96" y="128" width="320" height="56" rx="24" fill="#2d5a8e"/>
+  <rect x="96" y="160" width="320" height="24" fill="#2d5a8e"/>
+
+  <!-- Calendar rings -->
+  <rect x="168" y="104" width="16" height="56" rx="6" fill="#122740"/>
+  <rect x="328" y="104" width="16" height="56" rx="6" fill="#122740"/>
+
+  <!-- Grid dots: rows of small circles showing days -->
+  <g fill="#2d5a8e">
+    <circle cx="144" cy="224" r="10"/>
+    <circle cx="192" cy="224" r="10"/>
+    <circle cx="240" cy="224" r="10"/>
+    <circle cx="288" cy="224" r="10"/>
+    <circle cx="336" cy="224" r="10"/>
+    <circle cx="384" cy="224" r="10"/>
+
+    <circle cx="144" cy="280" r="10"/>
+    <circle cx="192" cy="280" r="10"/>
+    <!-- Highlighted day with worry color -->
+    <circle cx="240" cy="280" r="16" fill="#dc2626"/>
+    <circle cx="288" cy="280" r="10"/>
+    <circle cx="336" cy="280" r="10"/>
+    <circle cx="384" cy="280" r="10"/>
+
+    <circle cx="144" cy="336" r="10"/>
+    <circle cx="192" cy="336" r="10"/>
+    <circle cx="240" cy="336" r="10"/>
+    <!-- Green sighting dot -->
+    <circle cx="288" cy="336" r="16" fill="#16a34a"/>
+    <circle cx="336" cy="336" r="10"/>
+    <circle cx="384" cy="336" r="10"/>
+
+    <circle cx="144" cy="384" r="10"/>
+    <circle cx="192" cy="384" r="10"/>
+    <circle cx="240" cy="384" r="10"/>
+    <circle cx="288" cy="384" r="10"/>
+    <circle cx="336" cy="384" r="10"/>
+    <circle cx="384" cy="384" r="10"/>
+  </g>
+</svg>

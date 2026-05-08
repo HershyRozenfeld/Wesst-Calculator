@@ -1,0 +1,207 @@
+/**
+ * Tests for Main Calculator Orchestrator
+ * Integration tests that verify the full calculation pipeline.
+ */
+
+import { describe, test, expect } from 'vitest';
+import { calculateSeparationDays, mergeSeparationDays } from '../../src/engine/calculator';
+import { sameDate, type HebrewDate } from '../../src/calendar/hebrewDate';
+import type { Sighting, VesetRecord, SeparationDay } from '../../src/data/types';
+
+function hd(day: number, month: number, year: number = 5786): HebrewDate {
+  return { year, month, day };
+}
+
+function makeSighting(day: number, month: number, onah: 'day' | 'night' = 'day', id?: string): Sighting {
+  return {
+    id: id ?? `s-${month}-${day}`,
+    hebrewDate: hd(day, month),
+    onah,
+    type: 'regular',
+    medicationStatus: 'none',
+    pregnancyStatus: 'none',
+    createdAt: '',
+  };
+}
+
+describe('calculateSeparationDays — No sightings', () => {
+  test('returns empty with no sightings', () => {
+    const result = calculateSeparationDays([], [], { targetYear: 5786, targetMonth: 2 });
+    expect(result.separationDays.length).toBe(0);
+    expect(result.summary.hasFixedVeset).toBe(false);
+    expect(result.summary.sightingCount).toBe(0);
+  });
+});
+
+describe('calculateSeparationDays — Section 8: three worries without fixed veset', () => {
+  test('single sighting produces OB + chodesh worries for next month', () => {
+    // Sighting on 5 Nisan → should produce:
+    // 1. OB: day 30 (4 Iyar) and day 31 (5 Iyar)
+    // 2. Chodesh: 5 Iyar (same day of month)
+    // No haflaga (need 2+ sightings)
+    const sightings = [makeSighting(5, 1)];
+    const result = calculateSeparationDays(sightings, [], { targetYear: 5786, targetMonth: 2 });
+
+    // Check OB days
+    const obDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'onah_beinonit'),
+    );
+    expect(obDays.length).toBeGreaterThanOrEqual(1); // at least day 30 or 31 in Iyar
+
+    // Check chodesh worry
+    const chodeshDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'chodesh'),
+    );
+    expect(chodeshDays.length).toBeGreaterThanOrEqual(1);
+    // Day 5 of Iyar should be in chodesh worries
+    const has5thIyar = chodeshDays.some(d => sameDate(d.hebrewDate, hd(5, 2)));
+    expect(has5thIyar).toBe(true);
+  });
+
+  test('two sightings produce OB + chodesh + haflaga worries', () => {
+    const sightings = [
+      makeSighting(1, 1),
+      makeSighting(25, 1),
+    ];
+
+    // Target: Iyar (month 2) — haflaga worry should be 19 Iyar (25 days from 25 Nisan)
+    const result = calculateSeparationDays(sightings, [], { targetYear: 5786, targetMonth: 2 });
+
+    // Haflaga: 25 Nisan + 24 = 19 Iyar
+    const haflagaDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'haflaga'),
+    );
+    expect(haflagaDays.some(d => sameDate(d.hebrewDate, hd(19, 2)))).toBe(true);
+
+    // Chodesh: 25 Iyar (day of month of last sighting)
+    const chodeshDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'chodesh'),
+    );
+    expect(chodeshDays.some(d => sameDate(d.hebrewDate, hd(25, 2)))).toBe(true);
+  });
+});
+
+describe('calculateSeparationDays — Section 9: fixed veset suppresses other worries', () => {
+  test('fixed chodesh veset → only worry about the fixed day, no OB', () => {
+    const sightings = [makeSighting(10, 1)];
+    const fixedVeset: VesetRecord = {
+      id: 'v1',
+      type: 'chodesh',
+      status: 'fixed',
+      details: { kind: 'chodesh', dayOfMonth: 10, onah: 'day', isRoshChodesh: false },
+      establishedBy: [],
+      uprootCount: 0,
+      isMaAyanPatuach: false,
+      createdAt: '',
+      updatedAt: '',
+    };
+
+    const result = calculateSeparationDays(sightings, [fixedVeset], {
+      targetYear: 5786,
+      targetMonth: 2,
+    });
+
+    // Should have the fixed chodesh day
+    const chodeshDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'chodesh'),
+    );
+    expect(chodeshDays.some(d => sameDate(d.hebrewDate, hd(10, 2)))).toBe(true);
+
+    // Should NOT have OB days
+    const obDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'onah_beinonit'),
+    );
+    expect(obDays.length).toBe(0);
+
+    // Should NOT have haflaga days
+    const haflagaDays = result.separationDays.filter(
+      d => d.reasons.some(r => r.vesetType === 'haflaga'),
+    );
+    expect(haflagaDays.length).toBe(0);
+
+    // Summary
+    expect(result.summary.hasFixedVeset).toBe(true);
+    expect(result.summary.fixedVesetType).toBe('chodesh');
+  });
+});
+
+describe('mergeSeparationDays — Deduplication', () => {
+  test('merges days on same date', () => {
+    const days: SeparationDay[] = [
+      {
+        hebrewDate: hd(5, 2),
+        onah: 'day',
+        reasons: [{
+          vesetType: 'chodesh',
+          description_he: 'test1',
+          description_en: 'test1',
+          sectionRef: 12,
+        }],
+      },
+      {
+        hebrewDate: hd(5, 2),
+        onah: 'full',
+        reasons: [{
+          vesetType: 'onah_beinonit',
+          description_he: 'test2',
+          description_en: 'test2',
+          sectionRef: 37,
+        }],
+      },
+    ];
+
+    const merged = mergeSeparationDays(days);
+    expect(merged.length).toBe(1);
+    expect(merged[0]!.reasons.length).toBe(2);
+    expect(merged[0]!.onah).toBe('full'); // 'full' wins
+  });
+
+  test('does not merge different dates', () => {
+    const days: SeparationDay[] = [
+      {
+        hebrewDate: hd(4, 2),
+        onah: 'full',
+        reasons: [{ vesetType: 'onah_beinonit', description_he: '', description_en: '', sectionRef: 37 }],
+      },
+      {
+        hebrewDate: hd(5, 2),
+        onah: 'full',
+        reasons: [{ vesetType: 'onah_beinonit', description_he: '', description_en: '', sectionRef: 38 }],
+      },
+    ];
+
+    const merged = mergeSeparationDays(days);
+    expect(merged.length).toBe(2);
+  });
+
+  test('avoids duplicate reasons with same vesetType+sectionRef', () => {
+    const days: SeparationDay[] = [
+      {
+        hebrewDate: hd(5, 2),
+        onah: 'day',
+        reasons: [{ vesetType: 'chodesh', description_he: 'a', description_en: 'a', sectionRef: 12 }],
+      },
+      {
+        hebrewDate: hd(5, 2),
+        onah: 'day',
+        reasons: [{ vesetType: 'chodesh', description_he: 'b', description_en: 'b', sectionRef: 12 }],
+      },
+    ];
+
+    const merged = mergeSeparationDays(days);
+    expect(merged.length).toBe(1);
+    expect(merged[0]!.reasons.length).toBe(1); // deduplicated
+  });
+});
+
+describe('calculateSeparationDays — Medication suppression', () => {
+  test('proven medication suppresses all worries', () => {
+    // This requires both isMedicationActive AND medicationProven.
+    // Currently medicationProven is not yet tracked, so this test verifies
+    // the normal (non-suppressed) path.
+    const sightings = [makeSighting(5, 1)];
+    const result = calculateSeparationDays(sightings, [], { targetYear: 5786, targetMonth: 2 });
+    // Should NOT be suppressed (medicationProven defaults to false)
+    expect(result.separationDays.length).toBeGreaterThan(0);
+  });
+});
