@@ -106,6 +106,8 @@ export const en = {
     continuedNone: 'No previous sighting was found within 7 days. You can continue to the next step.',
     continuedPlaceholder: 'No, this is a new sighting',
     continuedSelect: 'Select previous sighting',
+    duplicateSameOnahTitle: 'A sighting already exists on this date and onah',
+    duplicateSameOnahHelp: 'A {{type}} sighting was already saved for {{date}}. Do not save another sighting for the same halachic time, because it would duplicate the calculation. If the saved details are wrong, delete the history entry and enter it again.',
   },
   calendar: {
     month: 'Month',

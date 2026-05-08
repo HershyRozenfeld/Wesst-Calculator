@@ -27,7 +27,7 @@ import type {
 import type { HebrewDate, Onah } from '../../calendar/hebrewDate';
 import { formatSightingDate } from '../../calendar/gregorianBridge';
 import { determineOnah, parseClockTime, formatLocalTime, halachicToday } from '../../calendar/zmanim';
-import { addHebrewDays, hebrewDaysBetween, isBefore } from '../../calendar/hebrewDate';
+import { addHebrewDays, hebrewDaysBetween, isBefore, sameDate } from '../../calendar/hebrewDate';
 
 interface Props {
   onComplete: () => void;
@@ -99,6 +99,11 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
   const totalSteps = 8;
   const update = (patch: Partial<WizardData>) => setData(d => ({ ...d, ...patch }));
+
+  const duplicateSameOnah = sightings.find(
+    s => sameDate(s.hebrewDate, data.hebrewDate) && s.onah === data.onah,
+  );
+  const shouldFinishWithoutSaving = step === 6 && (Boolean(duplicateSameOnah) || Boolean(data.continuedFromId));
 
   // Candidate previous sightings for "continued sighting" (section 112).
   const continuationCandidates = sightings
@@ -426,33 +431,47 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
 
         {step === 6 && (
           <div className="space-y-3">
-            <div className="rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
-              <p>{t('wizard.continuedHelp')}</p>
-              <p className="mt-2 font-medium">{t('wizard.continuedException')}</p>
-              <p className="mt-2 text-xs text-blue-800">{t('wizard.continuedSource')}</p>
-            </div>
-            {continuationCandidates.length === 0 ? (
-              <div className="rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-                {t('wizard.continuedNone')}
+            {duplicateSameOnah ? (
+              <div className="rounded border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
+                <p className="font-medium">{t('wizard.duplicateSameOnahTitle')}</p>
+                <p>
+                  {t('wizard.duplicateSameOnahHelp', {
+                    date: formatSightingDate(duplicateSameOnah.hebrewDate, duplicateSameOnah.onah, lang),
+                    type: t(`sighting.type.${duplicateSameOnah.type}`),
+                  })}
+                </p>
               </div>
             ) : (
-              <label className="block">
-                <span className="block text-sm font-medium mb-1">{t('wizard.continuedFrom')}</span>
-                <select
-                  value={data.continuedFromId ?? ''}
-                  onChange={e => update({ continuedFromId: e.target.value || undefined })}
-                  className="w-full rounded border border-gray-300 px-3 py-2"
-                >
-                  <option value="">{t('wizard.continuedPlaceholder')}</option>
-                  {continuationCandidates.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {formatSightingDate(s.hebrewDate, s.onah, lang)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <>
+                <div className="rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
+                  <p>{t('wizard.continuedHelp')}</p>
+                  <p className="mt-2 font-medium">{t('wizard.continuedException')}</p>
+                  <p className="mt-2 text-xs text-blue-800">{t('wizard.continuedSource')}</p>
+                </div>
+                {continuationCandidates.length === 0 ? (
+                  <div className="rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                    {t('wizard.continuedNone')}
+                  </div>
+                ) : (
+                  <label className="block">
+                    <span className="block text-sm font-medium mb-1">{t('wizard.continuedFrom')}</span>
+                    <select
+                      value={data.continuedFromId ?? ''}
+                      onChange={e => update({ continuedFromId: e.target.value || undefined })}
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                    >
+                      <option value="">{t('wizard.continuedPlaceholder')}</option>
+                      {continuationCandidates.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {formatSightingDate(s.hebrewDate, s.onah, lang)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
             )}
-            {data.continuedFromId && (
+            {!duplicateSameOnah && data.continuedFromId && (
               <div className="rounded border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-900">
                 {t('wizard.continuedSelected')}
               </div>
@@ -498,10 +517,10 @@ export function SightingWizard({ onComplete, onCancel }: Props) {
         {step < totalSteps ? (
           <button
             type="button"
-            onClick={step === 6 && data.continuedFromId ? onCancel : () => setStep(s => s + 1)}
+            onClick={shouldFinishWithoutSaving ? onCancel : () => setStep(s => s + 1)}
             className="px-4 py-2 rounded bg-primary text-white hover:bg-primary-dark"
           >
-            {step === 6 && data.continuedFromId ? t('common.finishWithoutSaving') : t('common.next')}
+            {shouldFinishWithoutSaving ? t('common.finishWithoutSaving') : t('common.next')}
           </button>
         ) : (
           <button
