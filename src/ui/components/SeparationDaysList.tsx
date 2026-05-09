@@ -8,16 +8,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CalculationResult } from '../../engine/calculator';
-import { formatSightingDate, formatHebrewDate } from '../../calendar/gregorianBridge';
+import { formatSightingDate, formatHebrewDate, toGregorian } from '../../calendar/gregorianBridge';
+import { getSunrise, getSunset, formatLocalTime } from '../../calendar/zmanim';
 import { gematriya } from '@hebcal/core';
 import { HalachaModal } from './HalachaModal';
 import { HALACHA_BY_NUMBER } from '../../data/halachaSections';
+import type { Location } from '../../data/locations';
+import type { HebrewDate, Onah } from '../../calendar/hebrewDate';
 
 interface Props {
   result: CalculationResult;
+  location: Location;
 }
 
-export function SeparationDaysList({ result }: Props) {
+export function SeparationDaysList({ result, location }: Props) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as 'he' | 'en';
   const [openSection, setOpenSection] = useState<number | null>(null);
@@ -62,6 +66,7 @@ export function SeparationDaysList({ result }: Props) {
             day.onah === 'full'
               ? formatHebrewDate(day.hebrewDate, lang)
               : formatSightingDate(day.hebrewDate, day.onah, lang);
+          const checkTimes = getSeparationCheckTimes(day.hebrewDate, day.onah, location);
           return (
             <li key={idx} className="border-s-4 border-sep-onah-beinonit ps-3 py-1">
               <div className="font-semibold">
@@ -98,6 +103,25 @@ export function SeparationDaysList({ result }: Props) {
                   );
                 })}
               </ul>
+              <div className="mt-2 rounded border border-sky-100 bg-sky-50 p-2 text-xs leading-5 text-sky-950">
+                <div className="font-semibold">{t('checking.title')}</div>
+                <div className="text-sky-800">
+                  {t('checking.location', {
+                    location: lang === 'he' ? location.name_he : location.name_en,
+                  })}
+                </div>
+                <dl className="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2">
+                  {checkTimes.map(item => (
+                    <div key={item.key} className="flex justify-between gap-3 rounded bg-white/70 px-2 py-1">
+                      <dt className="text-gray-600">{t(`checking.${item.key}`)}</dt>
+                      <dd className="font-medium text-gray-900">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-2">{t('checking.instruction')}</p>
+                <p className="mt-1 text-sky-800">{t('checking.notTaharah')}</p>
+                <p className="mt-1 text-[11px] text-sky-700">{t('checking.source')}</p>
+              </div>
             </li>
           );
         })}
@@ -106,4 +130,38 @@ export function SeparationDaysList({ result }: Props) {
     <HalachaModal sectionNumber={openSection} onClose={() => setOpenSection(null)} />
     </>
   );
+}
+
+function getSeparationCheckTimes(
+  hebrewDate: HebrewDate,
+  onah: Onah | 'full',
+  location: Location,
+): Array<{ key: string; value: string }> {
+  const civilDate = toGregorian(hebrewDate);
+  const previousCivilDate = new Date(civilDate);
+  previousCivilDate.setDate(previousCivilDate.getDate() - 1);
+
+  const nightStart = getSunset(previousCivilDate, location);
+  const dayStart = getSunrise(civilDate, location);
+  const dayEnd = getSunset(civilDate, location);
+
+  if (onah === 'night') {
+    return [
+      { key: 'nightStart', value: formatLocalTime(nightStart, location) },
+      { key: 'nightEnd', value: formatLocalTime(dayStart, location) },
+    ];
+  }
+
+  if (onah === 'day') {
+    return [
+      { key: 'dayStart', value: formatLocalTime(dayStart, location) },
+      { key: 'dayEnd', value: formatLocalTime(dayEnd, location) },
+    ];
+  }
+
+  return [
+    { key: 'nightStart', value: formatLocalTime(nightStart, location) },
+    { key: 'dayStart', value: formatLocalTime(dayStart, location) },
+    { key: 'dayEnd', value: formatLocalTime(dayEnd, location) },
+  ];
 }

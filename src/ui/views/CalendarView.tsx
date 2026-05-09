@@ -101,7 +101,7 @@ export function CalendarView() {
 
       {/* Right column on desktop: results */}
       <div className="space-y-3 lg:space-y-3 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto">
-        <SeparationDaysList result={result} />
+        <SeparationDaysList result={result} location={settings.location} />
       </div>
     </div>
   );

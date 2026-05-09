@@ -123,6 +123,17 @@ export const en = {
     noFixedVeset: 'No fixed veset — worry about chodesh, haflaga, and onah beinonit',
     askRav: 'Consult a rabbi',
   },
+  checking: {
+    title: 'Separation and check times',
+    location: 'Location: {{location}}',
+    nightStart: 'Night starts',
+    nightEnd: 'Night ends / day starts',
+    dayStart: 'Day starts',
+    dayEnd: 'Day ends',
+    instruction: 'Check: perform a bedikah during the concern onah. To uproot a fixed veset, the check is required; if she did not check on the veset day, she should check when she remembers.',
+    notTaharah: 'These times are only for veset/separation days, not hefsek taharah or seven clean days.',
+    source: 'Based on sections 3, 5, 7, and 16',
+  },
   vesetType: {
     chodesh: 'Veset HaChodesh',
     haflaga: 'Veset HaHaflaga',
