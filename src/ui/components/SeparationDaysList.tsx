@@ -57,6 +57,20 @@ export function SeparationDaysList({ result, location }: Props) {
         </div>
       )}
 
+      <div className="mb-3 rounded border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-5 text-sky-950">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="font-semibold">{t('checking.title')}</span>
+          <span className="text-sky-800">
+            {t('checking.location', {
+              location: lang === 'he' ? location.name_he : location.name_en,
+            })}
+          </span>
+        </div>
+        <p className="mt-1">{t('checking.instruction')}</p>
+        <p className="mt-0.5 text-sky-800">{t('checking.notTaharah')}</p>
+        <p className="mt-0.5 text-[11px] text-sky-700">{t('checking.source')}</p>
+      </div>
+
       {/* Days */}
       <ul className="space-y-2">
         {result.separationDays.map((day, idx) => {
@@ -103,24 +117,16 @@ export function SeparationDaysList({ result, location }: Props) {
                   );
                 })}
               </ul>
-              <div className="mt-2 rounded border border-sky-100 bg-sky-50 p-2 text-xs leading-5 text-sky-950">
-                <div className="font-semibold">{t('checking.title')}</div>
-                <div className="text-sky-800">
-                  {t('checking.location', {
-                    location: lang === 'he' ? location.name_he : location.name_en,
-                  })}
-                </div>
-                <dl className="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2">
-                  {checkTimes.map(item => (
-                    <div key={item.key} className="flex justify-between gap-3 rounded bg-white/70 px-2 py-1">
-                      <dt className="text-gray-600">{t(`checking.${item.key}`)}</dt>
-                      <dd className="font-medium text-gray-900">{item.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="mt-2">{t('checking.instruction')}</p>
-                <p className="mt-1 text-sky-800">{t('checking.notTaharah')}</p>
-                <p className="mt-1 text-[11px] text-sky-700">{t('checking.source')}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-gray-500">{t('checking.windowLabel')}:</span>
+                {checkTimes.map(item => (
+                  <span
+                    key={item.key}
+                    className="rounded border border-sky-100 bg-sky-50 px-2 py-0.5 font-medium text-sky-900"
+                  >
+                    {t(`checking.${item.labelKey}`)} {item.value}
+                  </span>
+                ))}
               </div>
             </li>
           );
@@ -136,7 +142,7 @@ function getSeparationCheckTimes(
   hebrewDate: HebrewDate,
   onah: Onah | 'full',
   location: Location,
-): Array<{ key: string; value: string }> {
+): Array<{ key: string; labelKey: string; value: string }> {
   const civilDate = toGregorian(hebrewDate);
   const previousCivilDate = new Date(civilDate);
   previousCivilDate.setDate(previousCivilDate.getDate() - 1);
@@ -147,21 +153,34 @@ function getSeparationCheckTimes(
 
   if (onah === 'night') {
     return [
-      { key: 'nightStart', value: formatLocalTime(nightStart, location) },
-      { key: 'nightEnd', value: formatLocalTime(dayStart, location) },
+      {
+        key: 'night',
+        labelKey: 'nightOnah',
+        value: `${formatLocalTime(nightStart, location)}-${formatLocalTime(dayStart, location)}`,
+      },
     ];
   }
 
   if (onah === 'day') {
     return [
-      { key: 'dayStart', value: formatLocalTime(dayStart, location) },
-      { key: 'dayEnd', value: formatLocalTime(dayEnd, location) },
+      {
+        key: 'day',
+        labelKey: 'dayOnah',
+        value: `${formatLocalTime(dayStart, location)}-${formatLocalTime(dayEnd, location)}`,
+      },
     ];
   }
 
   return [
-    { key: 'nightStart', value: formatLocalTime(nightStart, location) },
-    { key: 'dayStart', value: formatLocalTime(dayStart, location) },
-    { key: 'dayEnd', value: formatLocalTime(dayEnd, location) },
+    {
+      key: 'night',
+      labelKey: 'nightOnah',
+      value: `${formatLocalTime(nightStart, location)}-${formatLocalTime(dayStart, location)}`,
+    },
+    {
+      key: 'day',
+      labelKey: 'dayOnah',
+      value: `${formatLocalTime(dayStart, location)}-${formatLocalTime(dayEnd, location)}`,
+    },
   ];
 }
