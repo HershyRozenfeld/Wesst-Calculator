@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "wesst-calculator"
 version = "0.1.0"
 description = "Halachic Vestos Calculator desktop application"
 authors = ["Hershy Rozenfeld"]
@@ -11,7 +11,7 @@ rust-version = "1.77.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+name = "wesst_calculator_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
