@@ -2,7 +2,7 @@
 
 # מחשבון ווסתות
 
-אפליקציית שולחן עבודה לחישוב ימי פרישה על פי הלכות ווסתות. הממשק נבנה ב-React/Vite ונארז כיישום Windows באמצעות Tauri, ללא שרת וללא העלאת נתונים, עם שמירה מקומית ויכולת ייצוא/ייבוא של גיבוי JSON.
+מערכת לחישוב ימי פרישה על פי הלכות ווסתות, הזמינה כאפליקציית Windows וכהרחבת Chrome. הממשק והמנוע משותפים לשני המוצרים, הנתונים נשמרים מקומית, ובהרחבת Chrome ניתן להפעיל גיבוי פרטי וחינמי ב-Google Drive ותזכורות מערכת לפני ימי פרישה.
 
 > הערה חשובה: האפליקציה אינה מחליפה פסיקה הלכתית. במקרים מורכבים או מסופקים יש לשאול רב. החישובים בפרויקט מבוססים על קובץ המקור `הלכות-ווסתות.txt` ועל ההחלטות ההלכתיות שתועדו בתיקיית `docs`.
 
@@ -19,6 +19,10 @@
 - שמירה מקומית ב-IndexedDB.
 - ייצוא וייבוא נתונים בקובץ JSON.
 - אריזת Desktop באמצעות Tauri, כולל קונפיגורציית Windows installer.
+- הרחבת Chrome מבוססת Manifest V3 עם popup ממוקד ו-Options Page מלא.
+- התחברות יזומה לחשבון Google וגיבוי לתיקיית `appDataFolder` הפרטית.
+- גיבוי אוטומטי לאחר שינוי, גיבוי ידני ושחזור מהענן.
+- תזכורות Chrome לפי מספר ימים מראש ושעה שהמשתמש מגדיר.
 - תמיכת PWA נשמרת כשכבת frontend/offline, אך היעד הסופי הוא אפליקציה שולחנית.
 - בדיקות Vitest למנוע ולמודולי הלוח.
 
@@ -42,6 +46,7 @@
 ```text
 .
 ├── docs/                  תיעוד, אפיון, החלטות ויומן פעילות
+├── extension/             הרחבת Chrome: popup, options, service worker ו-OAuth
 ├── public/                קבצי PWA, favicon ואייקונים
 ├── scripts/               סקריפטים ליצירת אייקונים ועיבוד מקור הלכתי
 ├── src-tauri/             מעטפת Tauri, קונפיגורציית Desktop ואייקוני installer
@@ -109,6 +114,10 @@
 
 יש תמיכה בייצוא וייבוא JSON לצורך גיבוי ומעבר בין מכשירים.
 
+באפליקציית Chrome הנתונים המקומיים נשמרים ב-IndexedDB של ההרחבה. כאשר המשתמש מתחבר ל-Google ומפעיל גיבוי, נוצר קובץ יחיד בשם `wesst-calculator-backup.json` בתיקיית האפליקציה הנסתרת של Google Drive. הקובץ אינו מופיע ב-My Drive ואינו משותף עם משתמשים אחרים.
+
+> הנתונים של אפליקציית Windows, אתר הפיתוח והרחבת Chrome נמצאים במאגרי אחסון מקומיים נפרדים. מעבר ביניהם נעשה באמצעות ייצוא/ייבוא JSON; סנכרון ישיר בין אפליקציית Windows להרחבה אינו ממומש עדיין.
+
 ## התקנה והרצה
 
 דרישות לפיתוח frontend:
@@ -172,6 +181,42 @@ npm run test:run
 npx tsc --noEmit
 ```
 
+## הרחבת Chrome
+
+בניית תיקיית הרחבה לטעינה מקומית:
+
+```powershell
+npm run extension:build
+```
+
+התוצאה נוצרת בתיקייה `dist-extension`. כדי לטעון אותה:
+
+1. פתחו `chrome://extensions`.
+2. הפעילו "מצב פיתוח".
+3. בחרו "טעינת פריט שלא נארז".
+4. בחרו את תיקיית `dist-extension`.
+
+יצירת קובץ ZIP להפצה או להעלאה ל-Chrome Web Store:
+
+```powershell
+npm run extension:package
+```
+
+הקובץ נוצר תחת `release-artifacts/wesst-calculator-chrome-extension.zip`.
+
+### הגדרת Google OAuth
+
+הקוד אינו מכיל מזהה OAuth פרטי. לפני שההתחברות והגיבוי יעבדו:
+
+1. צרו פרויקט ב-Google Cloud Console והפעילו בו את Google Drive API.
+2. הגדירו OAuth consent screen.
+3. טענו את ההרחבה ב-Chrome והעתיקו את מזהה ההרחבה מהעמוד `chrome://extensions`.
+4. צרו OAuth Client מסוג Chrome Extension והזינו את מזהה ההרחבה.
+5. החליפו את הערך `YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` בקובץ `extension/public/manifest.json`.
+6. בנו מחדש באמצעות `npm run extension:build` וטענו מחדש את ההרחבה.
+
+ההרשאה היחידה מול Drive היא `drive.appdata`, הרשאה לא רגישה שמוגבלת לתיקיית האפליקציה הפרטית. ההתחברות מוצגת רק לאחר לחיצה מפורשת של המשתמש בחלון התוסף.
+
 ## פקודות npm זמינות
 
 ```json
@@ -181,6 +226,10 @@ npx tsc --noEmit
   "preview": "vite preview",
   "desktop:dev": "tauri dev",
   "desktop:build": "tauri build",
+  "extension:dev": "vite --config extension/vite.config.ts",
+  "extension:check": "TypeScript check for the extension",
+  "extension:build": "vite build --config extension/vite.config.ts",
+  "extension:package": "build + zip",
   "test": "vitest",
   "test:run": "vitest run",
   "test:coverage": "vitest run --coverage"
@@ -200,6 +249,7 @@ npx tsc --noEmit
 - ממשק משתמש מלא להזנת נתונים וצפייה בתוצאות.
 - שמירה מקומית וגיבוי.
 - מעטפת Desktop עם Tauri, אייקונים ופקודות build.
+- הרחבת Chrome עם Options Page מלא, גיבוי Google Drive ותזכורות.
 - PWA עם אייקונים ו-Service Worker כשכבת frontend.
 
 ## נקודות המשך ידועות
@@ -208,6 +258,8 @@ npx tsc --noEmit
 - להרחיב את ניהול העקירה והחזרה של `VesetRecord` לאורך זמן.
 - להשלים מעקב אפליקטיבי אחרי תרופה שהוכחה בשלוש פעמים, במקום `medicationProven = false` שמופיע כרגע ב-`stateManager.ts`.
 - להשלים build חתום/לא חתום של Windows installer ולהריץ QA על האפליקציה השולחנית.
+- להגדיר OAuth Client קבוע ולפרסם את ההרחבה ב-Chrome Web Store.
+- להחליט אם נדרש סנכרון ישיר גם עבור אפליקציית Windows; כרגע הגיבוי הענני קיים בהרחבה בלבד.
 - לבצע ביקורת הלכתית מסודרת על ידי סמכות רבנית לפני שימוש מעשי.
 
 ## תיעוד
@@ -224,6 +276,6 @@ npx tsc --noEmit
 
 ## פרטיות
 
-אין שרת ואין API חיצוני לשמירת נתונים. בגרסת Desktop הנתונים נשמרים מקומית בתוך סביבת ה-WebView של האפליקציה. מחיקת נתוני האפליקציה/ה-WebView עלולה למחוק את המידע, ולכן מומלץ לייצא גיבוי תקופתי דרך מסך ההגדרות.
+אין שרת בבעלות הפרויקט. בגרסת Desktop הנתונים נשמרים מקומית בתוך סביבת ה-WebView. בהרחבת Chrome הנתונים נשמרים מקומית, ואם המשתמש בוחר להתחבר, עותק גיבוי נשלח ישירות מההרחבה לתיקיית האפליקציה הפרטית בחשבון Google Drive שלו. פרטים נוספים נמצאים ב-[מדיניות הפרטיות](PRIVACY.md).
 
 </div>

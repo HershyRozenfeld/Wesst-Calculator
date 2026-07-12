@@ -1,0 +1,14 @@
+.extension-controls { direction: rtl; max-width: 1120px; margin: 16px auto 0; padding: 16px; border: 1px solid #d8e0e8; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgb(15 23 42 / 8%); font-family: Arial, sans-serif; color: #172033; }
+.extension-controls h2 { margin: 0; font-size: 18px; }
+.extension-controls p { margin: 4px 0 0; color: #5d6878; font-size: 13px; }
+.extension-controls .setup-warning { margin-top: 12px; padding: 9px; border: 1px solid #e7b641; border-radius: 6px; background: #fff8e6; color: #7c4a03; }
+.control-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; align-items: end; }
+.control-grid label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; }
+.control-grid input[type="number"], .control-grid input[type="time"] { height: 36px; border: 1px solid #bac5d2; border-radius: 6px; padding: 6px 9px; }
+.control-grid .toggle { flex-direction: row; align-items: center; min-height: 36px; }
+.control-grid input[type="checkbox"] { width: 18px; height: 18px; }
+.control-actions { display: flex; gap: 12px; align-items: center; margin-top: 14px; }
+.control-actions button { border: 1px solid #21466f; border-radius: 6px; padding: 8px 12px; color: #21466f; background: white; font-weight: 700; }
+.control-actions span { color: #166534; font-size: 13px; }
+@media (max-width: 800px) { .extension-controls { margin: 10px; } .control-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .control-grid { grid-template-columns: 1fr; } }
