@@ -204,6 +204,19 @@ npm run extension:package
 
 הקובץ נוצר תחת `release-artifacts/wesst-calculator-chrome-extension.zip`.
 
+העלאה דרך Chrome Web Store API V2 מתבצעת בעזרת `scripts/chrome-web-store.mjs`.
+יש ליצור קובץ מקומי בשם `.cws-credentials.local.json` לפי התבנית
+`scripts/chrome-web-store-credentials.example.json`; הקובץ המקומי מוחרג מ-Git ולעולם אינו עולה למאגר.
+
+```powershell
+npm run extension:store:status
+npm run extension:store:upload
+npm run extension:store:publish
+```
+
+ה-API מטפל בחבילה, בסטטוס ובהגשה לפרסום. פרטי הרישום, התמונות והצהרות הפרטיות
+מוגדרים ידנית בלוח המפתחים לפי `chrome-store-assets/STORE_LISTING_HE.md`.
+
 ### נכסים לחנות Chrome Web Store
 
 התקנת כלי יצירת התמונות והרצת המחולל:
@@ -243,6 +256,9 @@ npm run store:assets
   "extension:check": "TypeScript check for the extension",
   "extension:build": "vite build --config extension/vite.config.ts",
   "extension:package": "build + zip",
+  "extension:store:status": "check Chrome Web Store item status",
+  "extension:store:upload": "upload the packaged extension through Chrome Web Store API V2",
+  "extension:store:publish": "submit the uploaded extension for review",
   "store:assets": "generate and normalize Chrome Web Store images",
   "test": "vitest",
   "test:run": "vitest run",

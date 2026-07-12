@@ -9,3 +9,4 @@ coverage/
 *.tsbuildinfo
 vite-dev*.log
 release-artifacts/
+.cws-credentials.local.json
