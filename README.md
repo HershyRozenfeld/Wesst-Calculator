@@ -206,14 +206,14 @@ npm run extension:package
 
 ### הגדרת Google OAuth
 
-הקוד אינו מכיל מזהה OAuth פרטי. לפני שההתחברות והגיבוי יעבדו:
+הפרויקט מוגדר מול Google Cloud באופן הבא:
 
-1. צרו פרויקט ב-Google Cloud Console והפעילו בו את Google Drive API.
-2. הגדירו OAuth consent screen.
-3. טענו את ההרחבה ב-Chrome והעתיקו את מזהה ההרחבה מהעמוד `chrome://extensions`.
-4. צרו OAuth Client מסוג Chrome Extension והזינו את מזהה ההרחבה.
-5. החליפו את הערך `YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` בקובץ `extension/public/manifest.json`.
-6. בנו מחדש באמצעות `npm run extension:build` וטענו מחדש את ההרחבה.
+- Google Cloud project: `wesst-calculator-hr-2026`
+- Chrome Web Store Item ID: `bjcjbmcenflmbbmggpflnlgbcbomjifa`
+- OAuth Client מסוג Chrome Extension מוגדר בקובץ `extension/public/manifest.json`
+- ההרשאה היחידה ל-Drive היא `drive.appdata`
+
+במצב הפיתוח הנוכחי מסך ההסכמה נמצא במצב Testing, ולכן רק משתמשים שמוגדרים כ-Test users ב-Google Auth Platform יכולים להתחבר. לפני הפצה רחבה יש להשלים את פרטי הרישום בחנות ולשנות את סטטוס האפליקציה בהתאם למדיניות Google.
 
 ההרשאה היחידה מול Drive היא `drive.appdata`, הרשאה לא רגישה שמוגבלת לתיקיית האפליקציה הפרטית. ההתחברות מוצגת רק לאחר לחיצה מפורשת של המשתמש בחלון התוסף.
 

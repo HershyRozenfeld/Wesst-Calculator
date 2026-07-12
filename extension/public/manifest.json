@@ -8,7 +8,7 @@
   "permissions": ["identity", "identity.email", "storage", "alarms", "notifications"],
   "host_permissions": ["https://www.googleapis.com/*"],
   "oauth2": {
-    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "330622758347-ske4ru2mu706o2u0kr45h31rcjoamc52.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
   },
   "background": { "service_worker": "service-worker.js", "type": "module" },
