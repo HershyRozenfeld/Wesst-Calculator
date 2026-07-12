@@ -204,6 +204,19 @@ npm run extension:package
 
 הקובץ נוצר תחת `release-artifacts/wesst-calculator-chrome-extension.zip`.
 
+### נכסים לחנות Chrome Web Store
+
+התקנת כלי יצירת התמונות והרצת המחולל:
+
+```powershell
+python -m pip install -r scripts/requirements-store-assets.txt
+npm run store:assets
+```
+
+התוצרים נשמרים תחת `chrome-store-assets` וכוללים אייקונים בגדלים הנדרשים,
+חמש תמונות מסך בגודל 1280x800, תמונת קידום קטנה בגודל 440x280 ותמונת Marquee
+בגודל 1400x560. הנתונים המוצגים בתמונות המסך הם נתוני הדגמה בלבד.
+
 ### הגדרת Google OAuth
 
 הפרויקט מוגדר מול Google Cloud באופן הבא:
@@ -230,6 +243,7 @@ npm run extension:package
   "extension:check": "TypeScript check for the extension",
   "extension:build": "vite build --config extension/vite.config.ts",
   "extension:package": "build + zip",
+  "store:assets": "generate and normalize Chrome Web Store images",
   "test": "vitest",
   "test:run": "vitest run",
   "test:coverage": "vitest run --coverage"
@@ -258,7 +272,7 @@ npm run extension:package
 - להרחיב את ניהול העקירה והחזרה של `VesetRecord` לאורך זמן.
 - להשלים מעקב אפליקטיבי אחרי תרופה שהוכחה בשלוש פעמים, במקום `medicationProven = false` שמופיע כרגע ב-`stateManager.ts`.
 - להשלים build חתום/לא חתום של Windows installer ולהריץ QA על האפליקציה השולחנית.
-- להגדיר OAuth Client קבוע ולפרסם את ההרחבה ב-Chrome Web Store.
+- להשלים את פרטי הרישום, להעביר את מסך ההסכמה מ-Testing ל-Production ולפרסם את ההרחבה ב-Chrome Web Store.
 - להחליט אם נדרש סנכרון ישיר גם עבור אפליקציית Windows; כרגע הגיבוי הענני קיים בהרחבה בלבד.
 - לבצע ביקורת הלכתית מסודרת על ידי סמכות רבנית לפני שימוש מעשי.
 

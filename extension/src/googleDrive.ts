@@ -5,6 +5,7 @@ const DRIVE_API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3';
 
 export function isOAuthConfigured(): boolean {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.getManifest) return true;
   return !chrome.runtime.getManifest().oauth2?.client_id.startsWith('YOUR_');
 }
 
