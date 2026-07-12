@@ -14,6 +14,7 @@
     "extension:check": "tsc -p extension/tsconfig.json --noEmit",
     "extension:build": "npm run extension:check && vite build --config extension/vite.config.ts",
     "extension:package": "npm run extension:build && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-extension.ps1",
+    "store:assets": "python scripts/generate-store-assets.py",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
