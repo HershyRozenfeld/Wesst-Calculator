@@ -15,6 +15,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Sighting, VesetRecord, AppSettings, ExportSchema } from './types';
 import { DEFAULT_SETTINGS } from './types';
+import { notifyDataChanged } from './runtimeHooks';
 
 const DB_NAME = 'VestosCalculatorDB';
 const DB_VERSION = 1;
@@ -52,11 +53,13 @@ export async function getAllSightings(): Promise<Sighting[]> {
 export async function saveSighting(sighting: Sighting): Promise<void> {
   const db = await getDB();
   await db.put('sightings', sighting);
+  notifyDataChanged();
 }
 
 export async function deleteSighting(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('sightings', id);
+  notifyDataChanged();
 }
 
 // ===== Veset Records =====
@@ -69,11 +72,13 @@ export async function getAllVesetRecords(): Promise<VesetRecord[]> {
 export async function saveVesetRecord(record: VesetRecord): Promise<void> {
   const db = await getDB();
   await db.put('vesetRecords', record);
+  notifyDataChanged();
 }
 
 export async function deleteVesetRecord(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('vesetRecords', id);
+  notifyDataChanged();
 }
 
 // ===== Settings =====
@@ -87,6 +92,7 @@ export async function getSettings(): Promise<AppSettings> {
 export async function saveSettings(settings: AppSettings): Promise<void> {
   const db = await getDB();
   await db.put('settings', settings, SETTINGS_KEY);
+  notifyDataChanged();
 }
 
 // ===== Backup Tracking =====
@@ -191,6 +197,7 @@ export async function importAllData(jsonString: string): Promise<ImportResult> {
       data.settings ? tx.objectStore('settings').put(data.settings, SETTINGS_KEY) : Promise.resolve(),
     ]);
     await tx.done;
+    notifyDataChanged();
 
     return {
       success: true,
@@ -217,4 +224,5 @@ export async function clearAllData(): Promise<void> {
     db.clear('vesetRecords'),
     db.clear('settings'),
   ]);
+  notifyDataChanged();
 }
