@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "מחשבון ווסתות",
   "short_name": "ווסתות",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "חישוב ימי פרישה, גיבוי פרטי ב-Google Drive ותזכורות מותאמות אישית",
   "minimum_chrome_version": "111",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArTDH61BZ2ULUxSdIai2UySWYqrYLnqzbRQbVwJOgFFgc6hnceZKgAUnEBq5MwulI9SZoY/Ju7lwGKtcjLYZuE/GK1XA1pbmwo3c6MWa0/HRbhtwyKyf4Jcn6yo55mEsj5JczA3m/+HQSz9L9slytO3Xv/z4W00rpg90e8jMF/YoGexsoaEbueSDAhked/coiLdMTHvcuwmLgcUhf9gcehi/NGzJC8Jd8YVchvEGgsG0VVQmuDLXXy2sNyJLOAiIOzUzGnFJ87W6vWT7irWnJmrtF6PyE6C3sqbGzHaj/i3y6naaVEPYn3clNsx07njI+0wt6CpOkMheDGknMJ3njfwIDAQAB",
   "permissions": ["identity", "identity.email", "storage", "alarms", "notifications"],
   "host_permissions": ["https://www.googleapis.com/*"],
   "oauth2": {
