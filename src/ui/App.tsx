@@ -2,7 +2,7 @@
  * App — Main application shell with navigation.
  */
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppProvider, useAppContext } from './AppContext';
 import { CalendarView } from './views/CalendarView';
@@ -16,10 +16,15 @@ import '../i18n'; // initialize i18next
 
 type Tab = 'calendar' | 'add' | 'history' | 'timeline' | 'halacha' | 'settings';
 
-function AppShell() {
+interface AppShellProps {
+  initialTab: Tab;
+  settingsExtension?: ReactNode;
+}
+
+function AppShell({ initialTab, settingsExtension }: AppShellProps) {
   const { t } = useTranslation();
   const { loading } = useAppContext();
-  const [tab, setTab] = useState<Tab>('calendar');
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   if (loading) {
     return (
@@ -54,7 +59,7 @@ function AppShell() {
         {tab === 'history' && <HistoryView />}
         {tab === 'timeline' && <TimelineView />}
         {tab === 'halacha' && <HalachaView />}
-        {tab === 'settings' && <SettingsView />}
+        {tab === 'settings' && <SettingsView extensionContent={settingsExtension} />}
       </main>
 
       {/* Bottom navigation */}
@@ -80,10 +85,15 @@ function AppShell() {
   );
 }
 
-export default function App() {
+interface AppProps {
+  initialTab?: Tab;
+  settingsExtension?: ReactNode;
+}
+
+export default function App({ initialTab = 'calendar', settingsExtension }: AppProps) {
   return (
     <AppProvider>
-      <AppShell />
+      <AppShell initialTab={initialTab} settingsExtension={settingsExtension} />
     </AppProvider>
   );
 }

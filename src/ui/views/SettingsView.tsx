@@ -2,13 +2,17 @@
  * SettingsView — Language, theme, export/import, about.
  */
 
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../AppContext';
 import { downloadExport, importAllData } from '../../data/storage';
 import { LocationPicker } from '../components/LocationPicker';
 
-export function SettingsView() {
+interface SettingsViewProps {
+  extensionContent?: ReactNode;
+}
+
+export function SettingsView({ extensionContent }: SettingsViewProps) {
   const { t } = useTranslation();
   const { settings, updateSettings, refresh } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +43,8 @@ export function SettingsView() {
 
   return (
     <div className="space-y-4">
+      {extensionContent}
+
       {/* Language */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <h3 className="text-lg font-semibold mb-3">{t('settings.language')}</h3>
@@ -70,17 +76,18 @@ export function SettingsView() {
         />
       </div>
 
-      {/* Backup reminder */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={settings.backupReminder}
-            onChange={e => updateSettings({ ...settings, backupReminder: e.target.checked })}
-          />
-          <span>{t('settings.backupReminder')}</span>
-        </label>
-      </div>
+      {!extensionContent && (
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.backupReminder}
+              onChange={e => updateSettings({ ...settings, backupReminder: e.target.checked })}
+            />
+            <span>{t('settings.backupReminder')}</span>
+          </label>
+        </div>
+      )}
 
       {/* Export / Import */}
       <div className="bg-white rounded-lg shadow-sm p-4 space-y-3">
