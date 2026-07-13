@@ -128,7 +128,13 @@ function ExtensionControls() {
 }
 
 function Options() {
-  return <App initialTab="settings" settingsExtension={<ExtensionControls />} />;
+  return (
+    <App
+      initialTab="settings"
+      settingsExtension={<ExtensionControls />}
+      showWaterBackdrop={false}
+    />
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><Options /></React.StrictMode>);

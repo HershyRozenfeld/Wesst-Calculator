@@ -12,6 +12,7 @@ import { TimelineView } from './views/TimelineView';
 import { SettingsView } from './views/SettingsView';
 import { HalachaView } from './views/HalachaView';
 import { BackupReminder } from './components/BackupReminder';
+import { WaterBackdrop } from './components/WaterBackdrop';
 import '../i18n'; // initialize i18next
 
 type Tab = 'calendar' | 'add' | 'history' | 'timeline' | 'halacha' | 'settings';
@@ -19,17 +20,21 @@ type Tab = 'calendar' | 'add' | 'history' | 'timeline' | 'halacha' | 'settings';
 interface AppShellProps {
   initialTab: Tab;
   settingsExtension?: ReactNode;
+  showWaterBackdrop: boolean;
 }
 
-function AppShell({ initialTab, settingsExtension }: AppShellProps) {
+function AppShell({ initialTab, settingsExtension, showWaterBackdrop }: AppShellProps) {
   const { t } = useTranslation();
   const { loading } = useAppContext();
   const [tab, setTab] = useState<Tab>(initialTab);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">{t('common.loading')}</div>
+      <div className="app-shell min-h-screen">
+        {showWaterBackdrop && <WaterBackdrop />}
+        <div className="app-shell__content min-h-screen flex items-center justify-center">
+          <div className="text-gray-500">{t('common.loading')}</div>
+        </div>
       </div>
     );
   }
@@ -44,43 +49,46 @@ function AppShell({ initialTab, settingsExtension }: AppShellProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-primary text-white p-4 shadow">
-        <h1 className="text-xl font-bold text-center">{t('app.title')}</h1>
-        <p className="text-center text-xs opacity-80 mt-0.5">{t('app.subtitle')}</p>
-      </header>
+    <div className="app-shell min-h-screen pb-20">
+      {showWaterBackdrop && <WaterBackdrop />}
+      <div className="app-shell__content">
+        <header className="bg-primary text-white p-4 shadow">
+          <h1 className="text-xl font-bold text-center">{t('app.title')}</h1>
+          <p className="text-center text-xs opacity-80 mt-0.5">{t('app.subtitle')}</p>
+        </header>
 
-      <main className={`${tab === 'calendar' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto p-3 lg:p-4`}>
-        <BackupReminder />
-        {tab === 'calendar' && <CalendarView />}
-        {tab === 'add' && (
-          <SightingWizard onComplete={() => setTab('calendar')} onCancel={() => setTab('calendar')} />
-        )}
-        {tab === 'history' && <HistoryView />}
-        {tab === 'timeline' && <TimelineView />}
-        {tab === 'halacha' && <HalachaView />}
-        {tab === 'settings' && <SettingsView extensionContent={settingsExtension} />}
-      </main>
+        <main className={`${tab === 'calendar' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto p-3 lg:p-4`}>
+          <BackupReminder />
+          {tab === 'calendar' && <CalendarView />}
+          {tab === 'add' && (
+            <SightingWizard onComplete={() => setTab('calendar')} onCancel={() => setTab('calendar')} />
+          )}
+          {tab === 'history' && <HistoryView />}
+          {tab === 'timeline' && <TimelineView />}
+          {tab === 'halacha' && <HalachaView />}
+          {tab === 'settings' && <SettingsView extensionContent={settingsExtension} />}
+        </main>
 
-      {/* Bottom navigation */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="max-w-6xl mx-auto grid grid-cols-6">
-          {tabs.map(tabDef => (
-            <button
-              key={tabDef.key}
-              type="button"
-              onClick={() => setTab(tabDef.key)}
-              className={[
-                'py-2 flex flex-col items-center text-xs transition-colors',
-                tab === tabDef.key ? 'text-primary font-semibold' : 'text-gray-600 hover:text-primary',
-              ].join(' ')}
-            >
-              <span className="text-lg">{tabDef.icon}</span>
-              <span>{tabDef.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+        {/* Bottom navigation */}
+        <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-lg">
+          <div className="max-w-6xl mx-auto grid grid-cols-6">
+            {tabs.map(tabDef => (
+              <button
+                key={tabDef.key}
+                type="button"
+                onClick={() => setTab(tabDef.key)}
+                className={[
+                  'py-2 flex flex-col items-center text-xs transition-colors',
+                  tab === tabDef.key ? 'text-primary font-semibold' : 'text-gray-600 hover:text-primary',
+                ].join(' ')}
+              >
+                <span className="text-lg">{tabDef.icon}</span>
+                <span>{tabDef.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+      </div>
     </div>
   );
 }
@@ -88,12 +96,21 @@ function AppShell({ initialTab, settingsExtension }: AppShellProps) {
 interface AppProps {
   initialTab?: Tab;
   settingsExtension?: ReactNode;
+  showWaterBackdrop?: boolean;
 }
 
-export default function App({ initialTab = 'calendar', settingsExtension }: AppProps) {
+export default function App({
+  initialTab = 'calendar',
+  settingsExtension,
+  showWaterBackdrop = true,
+}: AppProps) {
   return (
     <AppProvider>
-      <AppShell initialTab={initialTab} settingsExtension={settingsExtension} />
+      <AppShell
+        initialTab={initialTab}
+        settingsExtension={settingsExtension}
+        showWaterBackdrop={showWaterBackdrop}
+      />
     </AppProvider>
   );
 }
