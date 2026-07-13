@@ -26,7 +26,7 @@
 - תמיכת PWA נשמרת כשכבת frontend/offline, אך היעד הסופי הוא אפליקציה שולחנית.
 - בדיקות Vitest למנוע ולמודולי הלוח.
 
-נכון לסריקה האחרונה, `npm run test:run` עובר עם 147 בדיקות.
+נכון לסריקה האחרונה, `npm run test:run` עובר עם 149 בדיקות.
 
 ## טכנולוגיות
 
@@ -237,9 +237,10 @@ npm run store:assets
 - Google Cloud project: `wesst-calculator-hr-2026`
 - Chrome Web Store Item ID: `bjcjbmcenflmbbmggpflnlgbcbomjifa`
 - OAuth Client מסוג Chrome Extension מוגדר בקובץ `extension/public/manifest.json`
+- המפתח הציבורי של פריט החנות כלול ב-manifest כדי לשמור על Item ID קבוע גם בטעינה מקומית.
 - ההרשאה היחידה ל-Drive היא `drive.appdata`
 
-במצב הפיתוח הנוכחי מסך ההסכמה נמצא במצב Testing, ולכן רק משתמשים שמוגדרים כ-Test users ב-Google Auth Platform יכולים להתחבר. לפני הפצה רחבה יש להשלים את פרטי הרישום בחנות ולשנות את סטטוס האפליקציה בהתאם למדיניות Google.
+פריט החנות `bjcjbmcenflmbbmggpflnlgbcbomjifa` מפורסם. כל עוד מסך ההסכמה של Google נמצא במצב Testing, רק משתמשים שמוגדרים כ-Test users ב-Google Auth Platform יכולים להתחבר; לפני הפצה רחבה יש להעביר את מסך ההסכמה למצב Production בהתאם למדיניות Google.
 
 ההרשאה היחידה מול Drive היא `drive.appdata`, הרשאה לא רגישה שמוגבלת לתיקיית האפליקציה הפרטית. ההתחברות מוצגת רק לאחר לחיצה מפורשת של המשתמש בחלון התוסף.
 
@@ -279,6 +280,7 @@ npm run store:assets
 - ממשק משתמש מלא להזנת נתונים וצפייה בתוצאות.
 - שמירה מקומית וגיבוי.
 - מעטפת Desktop עם Tauri, אייקונים ופקודות build.
+- רקע וידאו עדין באיכות Full HD עם עצירה אוטומטית כשהחלון מוסתר ותמיכה בהפחתת תנועה.
 - הרחבת Chrome עם Options Page מלא, גיבוי Google Drive ותזכורות.
 - PWA עם אייקונים ו-Service Worker כשכבת frontend.
 
@@ -288,7 +290,7 @@ npm run store:assets
 - להרחיב את ניהול העקירה והחזרה של `VesetRecord` לאורך זמן.
 - להשלים מעקב אפליקטיבי אחרי תרופה שהוכחה בשלוש פעמים, במקום `medicationProven = false` שמופיע כרגע ב-`stateManager.ts`.
 - להשלים build חתום/לא חתום של Windows installer ולהריץ QA על האפליקציה השולחנית.
-- להשלים את פרטי הרישום, להעביר את מסך ההסכמה מ-Testing ל-Production ולפרסם את ההרחבה ב-Chrome Web Store.
+- להעביר את מסך ההסכמה של Google מ-Testing ל-Production כדי לאפשר התחברות למשתמשים שאינם Test users.
 - להחליט אם נדרש סנכרון ישיר גם עבור אפליקציית Windows; כרגע הגיבוי הענני קיים בהרחבה בלבד.
 - לבצע ביקורת הלכתית מסודרת על ידי סמכות רבנית לפני שימוש מעשי.
 
@@ -307,5 +309,9 @@ npm run store:assets
 ## פרטיות
 
 אין שרת בבעלות הפרויקט. בגרסת Desktop הנתונים נשמרים מקומית בתוך סביבת ה-WebView. בהרחבת Chrome הנתונים נשמרים מקומית, ואם המשתמש בוחר להתחבר, עותק גיבוי נשלח ישירות מההרחבה לתיקיית האפליקציה הפרטית בחשבון Google Drive שלו. פרטים נוספים נמצאים ב-[מדיניות הפרטיות](PRIVACY.md).
+
+## נכסי צד שלישי
+
+רקע המים והבועות מבוסס על סרטון Pixabay חופשי לשימוש ששולב כרקע מעובד מתחת לממשק. פרטי המקור והרישיון מתועדים בקובץ [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 </div>
