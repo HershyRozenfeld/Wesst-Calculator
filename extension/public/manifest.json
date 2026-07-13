@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "מחשבון ווסתות",
   "short_name": "ווסתות",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "חישוב ימי פרישה, גיבוי פרטי ב-Google Drive ותזכורות מותאמות אישית",
   "minimum_chrome_version": "111",
   "permissions": ["identity", "identity.email", "storage", "alarms", "notifications"],
